@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>贪吃蛇</title>
+    <script src="jquery.js"></script>
+    <link rel="stylesheet" href="animate.min.css">
+    <script>
+        $(function () {
+            for (var i = 0; i < 20; i++) {
+                for (var k = 0; k < 20; k++) {
+                    var r = Math.floor(Math.random() * 255)
+                    var g = Math.floor(Math.random() * 255)
+                    var b = Math.floor(Math.random() * 255)
+                    $('<div>')
+                            .attr('id', i + '_' + k)
+                            .addClass('block')
+                            .appendTo('.box')
+                }
+                ;
+            }
+            ;
+            //制造蛇
+            var she = [{x: 0, y: 0}, {x: 0, y: 1}, {x: 0, y: 2}];
+            var map = {'0-0': true, '0-1': true, '0-2': true};
+
+            function findDiv(x, y) {
+                return $('#' + x + '_' + y);
+            }
+
+            $.each(she, function (i, v) {
+                findDiv(v.x, v.y).addClass('she');
+            });
+            function fangshiwu() {
+                var x = Math.floor(Math.random() * 20);
+                var y = Math.floor(Math.random() * 20);
+                while (map[x + '_' + y]) {
+                    x = Math.floor(Math.random() * 19);
+                    y = Math.floor(Math.random() * 19);
+                }
+                findDiv(x, y).addClass('shiwu');
+                return {x: x, y: y};
+            }
+
+            var shiwu = fangshiwu();
+            var map = [];
+            $(document).on('keydown', function (e) {
+                var biao1 = {'zuo': 37, 'shang': 38, 'you': 39, 'xia': 40}
+                var biao = {37: 'zuo', 38: 'shang', 39: 'you', 40: 'xia'};
+                if (Math.abs(e.keyCode - biao1[direction]) == 2) {
+                    return;
+                }
+                if (biao[e.keyCode]) {
+                    direction = biao[e.keyCode];
+                }
+            })
+
+            direction = 'you';
+            move = function () {
+                var jiutou = she[she.length - 1];
+                if (direction === 'you') {
+                    var xintou = {x: jiutou.x, y: jiutou.y + 1};
+                }
+                if (direction === 'zuo') {
+                    var xintou = {x: jiutou.x, y: jiutou.y - 1};
+                }
+                if (direction === 'shang') {
+                    var xintou = {x: jiutou.x - 1, y: jiutou.y};
+                }
+                if (direction === 'xia') {
+                    var xintou = {x: jiutou.x + 1, y: jiutou.y};
+                }
+                if (map[xintou.x + '_' + xintou.y]) {
+                    $('.end').addClass('active');
+                    clearInterval(t);
+                    return;
+                }
+                if (xintou.x < 0 || xintou.x > 19 || xintou.y < 0 || xintou.y > 19) {
+                    $('.end').addClass('active');
+                    clearInterval(t);
+                    return;
+                }
+
+                if (xintou.x === shiwu.x && xintou.y === shiwu.y) {
+                    findDiv(shiwu.x, shiwu.y).removeClass('shiwu')
+                    shiwu = fangshiwu();
+                } else {
+                    var weiba = she.shift();
+                    delete map[weiba.x + '_' + weiba.y];
+                    findDiv(weiba.x, weiba.y).removeClass('she');
+                }
+                ;
+                she.push(xintou);
+                map[xintou.x + '_' + xintou.y] = true;
+                findDiv(xintou.x, xintou.y).addClass('she');
+            }
+
+            time = 500;
+            $('.start').on('click', function () {
+                t = setInterval(move, time);
+            })
+            $('.stop').on('click', function () {
+                clearInterval(t);
+            })
+            $('.add').on('click', function () {
+                clearInterval(t);
+                time -= 100;
+                t = setInterval(move, time);
+            })
+
+            $('.again').on('click', function () {
+                location.reload();
+            })
+
+
+            $('.btn div').on('mouseover', function () {
+                $(this).addClass('animated bounceIn')
+            })
+            $('.btn div').on('mouseout', function () {
+                $(this).removeClass('animated bounceIn')
+            })
+        })
+    </script>
+</head>
+<body>
+<style>
+    body {
+        background: -webkit-radial-gradient(#333, #111);
+        background: radial-gradient(#333, #111);
+        background-position: center center;
+    }
+
+    .box {
+        height: 600px;
+        width: 600px;
+        margin: 0 auto;
+        background: #222;
+        background: -webkit-radial-gradient(#333, #111);
+        background: radial-gradient(#333, #111);
+        background-position: center center;
+    }
+
+    .block {
+        width: 30px;
+        height: 30px;
+        float: left;
+        background: rgba(0, 0, 0, 0.15);
+        -webkit-transition-property: background,
+        box-shadow,
+        opacity,
+        -webkit-transform;
+        transition-property: background,
+        box-shadow,
+        opacity,
+        transform;
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+        -webkit-transition-duration: 500ms;
+        transition-duration: 500ms;
+    }
+
+    .block:before {
+        bottom: 0;
+        content: '';
+        height: 0;
+        left: 0;
+        margin: auto;
+        opacity: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 0;
+        -webkit-transition: opacity 100ms;
+        transition: opacity 100ms;
+    }
+
+    .block.she {
+        width: 30px;
+        height: 30px;
+        background: rgba(255, 255, 255, 0.5);
+        box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.6);
+        -webkit-transition-duration: 0ms;
+        transition-duration: 0ms;
+    }
+
+    .block.shiwu {
+        -webkit-animation-name: scaleDraw;
+        -webkit-animation-timing-function: ease-in-out;
+        -webkit-animation-iteration-count: infinite;
+        -webkit-animation-duration: 5s;
+        -webkit-animation-direction: alternate;
+        background-color: rgb(118, 255, 51);
+        box-shadow: 0px 0px 13.7311px rgb(118, 255, 51);
+        opacity: 1;
+    }
+
+    button {
+        position: absolute;
+        left: 250px;
+        top: 20px;
+    }
+
+    @-webkit-keyframes scaleDraw {
+        0% {
+            -webkit-transform: scale(1);
+        }
+        25% {
+            -webkit-transform: scale(0.5);
+        }
+        50% {
+            -webkit-transform: scale(1);
+        }
+        75% {
+            -webkit-transform: scale(0.5);
+        }
+    }
+
+    .start {
+        top: 50px;
+    }
+
+    .stop {
+        top: 150px;
+    }
+
+    .add {
+        top: 250px;
+    }
+
+    .jian {
+        top: 350px;
+    }
+
+    .btn img {
+        width: 100%;
+        height: 100%;
+    }
+
+    .btn div {
+        width: 157px;
+        height: 50px;
+        position: absolute;
+        cursor: pointer;
+        left: 100px;
+    }
+
+    .end {
+        position: absolute;
+        top: 0;
+        left: 40%;
+        opacity: 0;
+        transition: all 1s ease;
+        transform: translate3d(0, -100%, 0);
+        width: 300px;
+        height: 200px;
+        border-radius: 30px;
+        box-shadow: 0 0 10px #000;
+        text-align: center;
+    }
+
+    .end.active {
+        opacity: 1;
+        transform: translate3d(0, 100%, 0);
+    }
+
+    .end img {
+        position: relative;
+        top: 50%;
+        margin-top: -25px;
+        width: 157px;
+        height: 50px;
+        cursor: pointer;
+    }
+</style>
+
+<div class="box"></div>
+<div class="end">
+    <img src="./again.png" alt="" class="again">
+</div>
+<div class="btn">
+    <div class="start"><img src="./start.png" alt=""></div>
+    <div class="stop"><img src="./stop.png" alt=""></div>
+    <div class="add"><img src="./add.png" alt=""></div>
+</div>
+</body>
+</html>
